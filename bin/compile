@@ -17,8 +17,8 @@ ENV_DIR=$3
 DEFAULT_HUGO_VERSION="0.26"
 
 ls "$ENV_DIR"
+cat "$ENV_DIR/BUILDPACK_URL"
 env
-printenv
 
 # attempt to extract the HUGO_VERSION parameter form the Heroku configuration vars, fall back to the default version if unavailable
 if [ -d "$ENV_DIR" -a -e "$ENV_DIR/HUGO_VERSION" ]; then
