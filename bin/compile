@@ -50,15 +50,27 @@ if [ -e $BUILD_DIR/.hugotheme ]; then
   git clone $THEME_URL
 fi
 
-# If this is not a production build, set the site's URL to the Heroku app URL
-#if [ -d "$ENV_DIR" -a -e "$ENV_DIR/HUGO_VERSION" ]; then
-#  export HUGO_VERSION=$(cat "$ENV_DIR/HUGO_VERSION")
-#else
-#  echo "\n-----> HEROKU_PARENT_APP_NAME or HEROKU_APP_NAME not defined, using $DEFAULT_HUGO_VERSION."
-#  export HUGO_VERSION=$DEFAULT_HUGO_VERSION
-#fi
-echo "\n-----> Envsubst?"
-which envsubst
+# If there is a config template to use
+if [ -e $BUILD_DIR/config.toml.template ]; then
+    echo "\n-----> Found a config.toml.template"
+
+    # If this is not a production build, set the site's URL to the Heroku app URL
+    # Otherwise use the existing config.toml
+    if [ -d "$ENV_DIR" -a -e "$ENV_DIR/HUGO_PARENT_APP_NAME" -a -e "$ENV_DIR/HUGO_APP_NAME" ]; then
+        if ! [[ "$ENV_DIR/HUGO_PARENT_APP_NAME" == *"production"* ]]; then
+            export HUGO_PARENT_APP_NAME=$(cat "$ENV_DIR/HUGO_PARENT_APP_NAME")
+            export HUGO_APP_NAME=$(cat "$ENV_DIR/HUGO_APP_NAME")
+            echo "\n-----> This is not a production build based on the parent app name: $HUGO_PARENT_APP_NAME"
+
+            export HUGO_CONFIG_BASEURL="https://$HUGO_APP_NAME.herokuapp.com"
+            echo "\n-----> Generating staging config.toml with baseurl: $HUGO_CONFIG_BASEURL"
+            sed -e 's@BSIDESROC_HUGO_URL@'${HUGO_CONFIG_BASEURL}'@' $BUILD_DIR/config.toml.template > $BUILD_DIR/config.toml
+            echo "\n-----> config.toml generated"
+        fi
+    else
+        echo "\n-----> Could not find env vars HUGO_PARENT_APP_NAME and HUGO_APP_NAME, not generating staging config"
+    fi
+fi
 
 # Build the site
 echo "\n-----> Building the site"
