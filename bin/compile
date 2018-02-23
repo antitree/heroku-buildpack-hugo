@@ -60,7 +60,7 @@ if [ -e $BUILD_DIR/config.toml.template ]; then
         # Otherwise use the existing config.toml
         export HEROKU_APP_NAME=$(cat "$ENV_DIR/HEROKU_APP_NAME")
 
-        if ! [[ "$HEROKU_APP_NAME" == *"production"* ]]; then
+        if ! [ "$HEROKU_APP_NAME" == *"production"* ] ; then
             echo "\n-----> This is not a production build based on the app name: $HEROKU_APP_NAME"
 
             export HUGO_CONFIG_BASEURL="https://$HEROKU_APP_NAME.herokuapp.com"
